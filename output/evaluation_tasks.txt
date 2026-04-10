@@ -1,0 +1,59 @@
+======================================================================
+EVALUATION TASK QUESTIONS
+Network Congestion & Uncertainty Visualization
+======================================================================
+
+INSTRUCTIONS:
+Each scenario shows a time window of network link telemetry.
+Condition A: Congestion-only view (no confidence information)
+Condition B: Confidence-aware view (with uncertainty encoding)
+Answer each question for both conditions.
+
+--------------------------------------------------
+SCENARIO 1: Clean Congestion Spike
+Link: ATLAng__HSTNng, Time window: 950-1049
+
+Q1.1: Is this link congested during this time window? (Yes/No)
+Q1.2: At what timestep does peak congestion occur?
+Q1.3: How confident are you in your answer to Q1.1? (1-5 scale)
+Q1.4: [Condition B only] Does the confidence information change
+       your interpretation? (Yes/No, explain)
+
+--------------------------------------------------
+SCENARIO 2: Noisy Hotspot
+Link: KSCYng__SNVAng, Time window: 1000-1099
+
+Q2.1: Is this link congested during this time window? (Yes/No)
+Q2.2: How reliable is the displayed congestion level?
+       (Very reliable / Somewhat reliable / Unreliable)
+Q2.3: Would you take action based on this data? (Yes/No)
+Q2.4: [Condition B only] Does the low confidence change
+       whether you would act? (Yes/No, explain)
+
+--------------------------------------------------
+SCENARIO 3: Missing Data Gap
+Link: NYCMng__WASHng, Time window: 500-599
+
+Q3.1: Are there periods where data appears to be missing? (Yes/No)
+Q3.2: During the gap, is the link congested or healthy?
+       (Congested / Healthy / Cannot determine)
+Q3.3: [Condition B only] Does the visualization clearly
+       indicate which measurements are missing? (Yes/No)
+
+--------------------------------------------------
+SCENARIO 4: Stable Healthy Link
+Link: NYCMng__WASHng, Time window: 1350-1449
+
+Q4.1: Is this link congested? (Yes/No)
+Q4.2: How confident are you that this link is healthy? (1-5)
+Q4.3: [Condition B only] Does the confidence information
+       increase your certainty? (Yes/No)
+
+======================================================================
+SCORING:
+- Correct identification: 1 point
+- Incorrect identification: 0 points
+- Compare total scores between Condition A and Condition B
+- Hypothesis: Condition B should yield fewer incorrect
+  interpretations, especially in Scenarios 2 and 3.
+======================================================================
