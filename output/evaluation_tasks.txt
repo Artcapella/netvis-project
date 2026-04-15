@@ -21,7 +21,7 @@ Q1.4: [Condition B only] Does the confidence information change
 
 --------------------------------------------------
 SCENARIO 2: Noisy Hotspot
-Link: KSCYng__SNVAng, Time window: 1000-1099
+Link: KSCYng__SNVAng, Time window: 450-549
 
 Q2.1: Is this link congested during this time window? (Yes/No)
 Q2.2: How reliable is the displayed congestion level?

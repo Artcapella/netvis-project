@@ -3,36 +3,47 @@
   <PolyData>
     <Piece NumberOfPoints="12"                   NumberOfVerts="0"                    NumberOfLines="15"                   NumberOfStrips="0"                    NumberOfPolys="0"                   >
       <PointData>
+        <Array type="String" Name="node_name" format="appended" offset="0"                   />
+        <DataArray type="Float32" Name="total_throughput" format="appended" RangeMin="0.41916701198"        RangeMax="1.9605900049"         offset="120"                 />
+        <DataArray type="Float32" Name="avg_confidence" format="appended" RangeMin="0.56184601784"        RangeMax="0.90497297049"        offset="224"                 />
+        <DataArray type="Int32" Name="missing_link_count" format="appended" RangeMin="0"                    RangeMax="2"                    offset="324"                 />
       </PointData>
       <CellData>
-        <DataArray type="Float32" Name="utilization" format="appended" RangeMin="0"                    RangeMax="0.98069602251"        offset="0"                   />
-        <DataArray type="Float32" Name="confidence" format="appended" RangeMin="0.37779998779"        RangeMax="0.93693202734"        offset="108"                 />
-        <DataArray type="Float32" Name="latency_proxy" format="appended" RangeMin="0"                    RangeMax="259.01400757"         offset="228"                 />
-        <DataArray type="Float32" Name="queue_proxy" format="appended" RangeMin="0"                    RangeMax="1792.5040283"         offset="336"                 />
-        <DataArray type="Int32" Name="is_missing" format="appended" RangeMin="0"                    RangeMax="1"                    offset="392"                 />
+        <DataArray type="Float32" Name="utilization" format="appended" RangeMin="0"                    RangeMax="0.91236901283"        offset="376"                 />
+        <DataArray type="Float32" Name="confidence" format="appended" RangeMin="0.37932300568"        RangeMax="0.93011200428"        offset="484"                 />
+        <DataArray type="Float32" Name="latency_proxy" format="appended" RangeMin="0"                    RangeMax="57.057998657"         offset="604"                 />
+        <DataArray type="Float32" Name="queue_proxy" format="appended" RangeMin="0"                    RangeMax="1114.7039795"         offset="712"                 />
+        <DataArray type="Int32" Name="is_missing" format="appended" RangeMin="0"                    RangeMax="1"                    offset="768"                 />
+        <DataArray type="UInt8" Name="rgba_utilization" NumberOfComponents="4" format="appended" RangeMin="269.07433917"         RangeMax="441.2266991"          offset="820"                 />
+        <DataArray type="Float32" Name="util_upper" format="appended" RangeMin="0.23987701535"        RangeMax="1.597242713"          offset="940"                 />
+        <DataArray type="Float32" Name="util_lower" format="appended" RangeMin="0"                    RangeMax="0.2652617991"         offset="1060"                />
+        <DataArray type="Int32" Name="staleness_count" format="appended" RangeMin="0"                    RangeMax="0"                    offset="1120"                />
+        <DataArray type="Float32" Name="freshness" format="appended" RangeMin="1"                    RangeMax="1"                    offset="1160"                />
+        <DataArray type="Int32" Name="is_anomaly" format="appended" RangeMin="0"                    RangeMax="1"                    offset="1204"                />
+        <DataArray type="Int32" Name="is_congested" format="appended" RangeMin="0"                    RangeMax="1"                    offset="1252"                />
       </CellData>
       <Points>
-        <DataArray type="Float32" Name="Points" NumberOfComponents="3" format="appended" RangeMin="84.467653227"         RangeMax="131.26820448"         offset="444"                 />
+        <DataArray type="Float32" Name="Points" NumberOfComponents="3" format="appended" RangeMin="84.467653227"         RangeMax="131.26820448"         offset="1300"                />
       </Points>
       <Verts>
-        <DataArray type="Int64" Name="connectivity" format="appended" RangeMin=""                     RangeMax=""                     offset="624"                 />
-        <DataArray type="Int64" Name="offsets" format="appended" RangeMin=""                     RangeMax=""                     offset="640"                 />
+        <DataArray type="Int64" Name="connectivity" format="appended" RangeMin=""                     RangeMax=""                     offset="1480"                />
+        <DataArray type="Int64" Name="offsets" format="appended" RangeMin=""                     RangeMax=""                     offset="1496"                />
       </Verts>
       <Lines>
-        <DataArray type="Int64" Name="connectivity" format="appended" RangeMin=""                     RangeMax=""                     offset="656"                 />
-        <DataArray type="Int64" Name="offsets" format="appended" RangeMin=""                     RangeMax=""                     offset="756"                 />
+        <DataArray type="Int64" Name="connectivity" format="appended" RangeMin=""                     RangeMax=""                     offset="1512"                />
+        <DataArray type="Int64" Name="offsets" format="appended" RangeMin=""                     RangeMax=""                     offset="1612"                />
       </Lines>
       <Strips>
-        <DataArray type="Int64" Name="connectivity" format="appended" RangeMin=""                     RangeMax=""                     offset="844"                 />
-        <DataArray type="Int64" Name="offsets" format="appended" RangeMin=""                     RangeMax=""                     offset="860"                 />
+        <DataArray type="Int64" Name="connectivity" format="appended" RangeMin=""                     RangeMax=""                     offset="1700"                />
+        <DataArray type="Int64" Name="offsets" format="appended" RangeMin=""                     RangeMax=""                     offset="1716"                />
       </Strips>
       <Polys>
-        <DataArray type="Int64" Name="connectivity" format="appended" RangeMin=""                     RangeMax=""                     offset="876"                 />
-        <DataArray type="Int64" Name="offsets" format="appended" RangeMin=""                     RangeMax=""                     offset="892"                 />
+        <DataArray type="Int64" Name="connectivity" format="appended" RangeMin=""                     RangeMax=""                     offset="1732"                />
+        <DataArray type="Int64" Name="offsets" format="appended" RangeMin=""                     RangeMax=""                     offset="1748"                />
       </Polys>
     </Piece>
   </PolyData>
   <AppendedData encoding="base64">
-   _AQAAAACAAAA8AAAAPwAAAA==eJz72vTcjgEIhHxS7TXPWNs5bbhkJ3v8u92PpefsTlzotPP4xQKWB4GnfNX2+fMe2U2zl7e9MeutHQDDRhdcAQAAAACAAAA8AAAARwAAAA==eJwBPADD/525Zz+GrgA/6WM6P6g0Wj8UzV8/JVlDP64oZT/H2m8/h95aPwBvwT42d9w+0JorP4nsWz/y7F4/djM/PwDLGao=AQAAAACAAAA8AAAAPwAAAA==eJwz5BByZACCwr32TvPeH3aY957dUZVN2vGuCpvjqo+3HKzvb3dggILTjY3O8q38jifLljmscxd1BABDGROqAQAAAACAAAA8AAAAFwAAAA==eJxjYIAAtsBcFwYCQFHgAYoaAEaZAl4=AQAAAACAAAA8AAAAEwAAAA==eJxjYGBgYGTADxhxqAEAAKAABA==AQAAAACAAACQAAAAdAAAAA==eJxbd3zFIQYGdicGIOg/tOKQLReU7bT+kHyrOpj98NfFQ4e/yoHZhXv3HaoWeecIYr8JXANky4PFv2nsPZSWJgNRX/XmkLExB5gtzzrlENd1JTA7hv/LoYdVohD1K74cWlJgB2ZXi8w6dH2xNJgNAFLeLgw=AAAAAACAAAAAAAAAAAAAAACAAAAAAAAAAQAAAACAAADwAAAAOAAAAA==eJxdjbkRADAIw8hj8rD/vikCjWh0MnA2+9PADp9wwQN/gu/kSDr8oKf2gjvuF7x6AvlNPjdgAJw=AQAAAACAAAB4AAAALgAAAA==eJwtxUEGACEAAMAkycpaSVbS/5/ZoZnLxHAlZxc/rn79ubl7+Pf08vYBKvgA8Q==AAAAAACAAAAAAAAAAAAAAACAAAAAAAAAAAAAAACAAAAAAAAAAAAAAACAAAAAAAAA
+   _AQAAAACAAABUAAAASAAAAA==eJwVyrENgDAMRNEsxQCWKRzhGMRZQZmAjv1LztXTl76ky9iakO9taj3IHvMmhqzql4Mc0EX8RJ2xdBDErEKmk0dg5AfxixgRAQAAAACAAAAwAAAAOwAAAA==eJwBMADP/6PJ7T7hl/A/hBJaP61M6D72fVg/K1EiP0pFnT8PndY+Uu3bPp30+j/Qufs+JlHnPk5JGB8=AQAAAACAAAAwAAAAOQAAAA==eJzzX5Nuv5LL3T5OxNL+VFe6vcpVfvtyHT37G7rS9i9nJdonNSXZn2T0tZ+l5mC/OTbeHgCnlxFgAQAAAACAAAAwAAAAFQAAAA==eJxjYGBgYIRiBiQ2EwN2AAAA8AAHAQAAAACAAAA8AAAAPwAAAA==eJxbfPKtHQMQfKuNsC/YrGFn53Debq7HB7usO4ft5D8vtJPZzAOWBwGWiZn2/HOv2bm0O9he2PnbDgC06hYhAQAAAACAAAA8AAAARwAAAA==eJwBPADD/0+sZz/+DgE/944+P6orWz9dv2A/XyVDP7wIZz/SG24/wvlgP6A2wj66aNg+4EsxP+maYT8J/F0/miZAP/ZhGSo=AQAAAACAAAA8AAAAPgAAAA==eJxzShB1ZACCyTMYnQJ69zukpbE5Nh8Qc8yYyOgoyfLK4WrFTgcGKEixTnGK28XpmPt8uYNTgqwjAAZcEZo=AQAAAACAAAA8AAAAGAAAAA==eJxjYICA4o5HzgwEQHtYtwsyHwCELwPNAQAAAACAAAA8AAAAEwAAAA==eJxjYGBgYGTADxhxqAEAAKAABA==AQAAAACAAAA8AAAARwAAAA==eJwBPADD//+UCur//5mTyisAx//ZZt//oh3k/5MJy/+nI+n/tjjv/99u5P//mXj//5mBvxgAvP+eGOX/9Iri/44CyNEwKFs=AQAAAACAAAA8AAAARwAAAA==eJwBPADD/4tzYT8A2rU+3Ym2P6vdAz89a1I//1h/P4L1Sz8TYic/kuDUPuR4Dj/1Ug0/c3LMP9l1ZT9SonU+oIWBPzxGGuk=AQAAAACAAAA8AAAAGgAAAA==eJxrSHS1ZQCC1AvtdgwEQNuXDBQ1ANWABX4=AQAAAACAAAA8AAAADAAAAA==eJxjYCAfAAAAPAABAQAAAACAAAA8AAAADwAAAA==eJxjYGiwZyATAwBMWAsyAQAAAACAAAA8AAAAEAAAAA==eJxjYGBgYGQgDwAAAHQAAg==AQAAAACAAAA8AAAAEQAAAA==eJxjYIAARgbCAF0NAACAAAM=AQAAAACAAACQAAAAdAAAAA==eJxbd3zFIQYGdicGIOg/tOKQLReU7bT+kHyrOpj98NfFQ4e/yoHZhXv3HaoWeecIYr8JXANky4PFv2nsPZSWJgNRX/XmkLExB5gtzzrlENd1JTA7hv/LoYdVohD1K74cWlJgB2ZXi8w6dH2xNJgNAFLeLgw=AAAAAACAAAAAAAAAAAAAAACAAAAAAAAAAQAAAACAAADwAAAAOAAAAA==eJxdjbkRADAIw8hj8rD/vikCjWh0MnA2+9PADp9wwQN/gu/kSDr8oKf2gjvuF7x6AvlNPjdgAJw=AQAAAACAAAB4AAAALgAAAA==eJwtxUEGACEAAMAkycpaSVbS/5/ZoZnLxHAlZxc/rn79ubl7+Pf08vYBKvgA8Q==AAAAAACAAAAAAAAAAAAAAACAAAAAAAAAAAAAAACAAAAAAAAAAAAAAACAAAAAAAAA
   </AppendedData>
 </VTKFile>
