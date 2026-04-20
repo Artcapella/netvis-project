@@ -25,3 +25,7 @@ Thumbs.db
 
 # outputs
 output/
+
+# Node
+node_modules/
+explorer/node_modules/
