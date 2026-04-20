@@ -1,21 +1,22 @@
 # Network Congestion & Uncertainty Visualization
 
-> Visualize network congestion and data-quality confidence on the Abilene backbone using real SNDlib traffic matrices, synthetic uncertainty injection, and both ParaView (VTK) and matplotlib outputs.
+> Visualize network congestion and data-quality confidence on the Abilene backbone using real SNDlib traffic matrices, synthetic uncertainty injection, and an interactive web explorer.
 
 ---
 
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+- [Web Explorer](#web-explorer)
 - [Key Features](#key-features)
 - [Directory Structure](#directory-structure)
 - [Prerequisites](#prerequisites)
-- [Quick Start](#quick-start)
+- [Quick Start — Web App](#quick-start--web-app)
+- [Quick Start — Python Pipeline](#quick-start--python-pipeline)
 - [Pipeline Details](#pipeline-details)
 - [Data Description](#data-description)
-- [Visualization Outputs](#visualization-outputs)
-- [Interactive Explorer](#interactive-explorer)
-- [ParaView Usage](#paraview-usage)
+- [Visualization Views](#visualization-views)
+- [Uploading Custom Data](#uploading-custom-data)
 - [Evaluation Scenarios](#evaluation-scenarios)
 - [Configuration & Tuning](#configuration--tuning)
 - [Troubleshooting](#troubleshooting)
@@ -29,19 +30,47 @@ This project builds an end-to-end pipeline for **confidence-aware network visual
 
 The core thesis: standard congestion heatmaps can be misleading when the underlying telemetry is noisy, stale, or missing. By encoding **data confidence** as a visual channel (opacity, line style, band width), analysts can distinguish genuine congestion from measurement artifacts.
 
+---
+
+## Web Explorer
+
+A fully interactive browser-based explorer is included in the `explorer/` directory. It runs entirely client-side — no server required.
+
+### Features
+
+| View | Description |
+|------|-------------|
+| **Explorer** | Animated topology map with play/pause, confidence filter slider, color-by mode, link detail panel with sparklines, and side-by-side ranking comparison (naive vs. confidence-filtered) |
+| **Topology Compare** | Side-by-side Figure A (congestion-only, uniform opacity) vs Figure B (confidence-aware, opacity encodes data quality, dashed = missing) |
+| **Time Series** | Per-link utilization plots with confidence bands, missing-data markers (red ✕), stale-measurement markers (orange dot), and reference lines at 80% and 100% capacity |
+| **Scenarios** | Auto-detected examples of 4 canonical evaluation scenarios: clean congestion spike, noisy hotspot, missing data gap, and stable healthy link |
+
+### Uploading Custom Data
+
+Click **↑ Upload Data** to replace the embedded Abilene dataset with your own. The app auto-detects the format from CSV column headers and supports three modes:
+
+| Format | Required Columns | Notes |
+|--------|-----------------|-------|
+| **Explorer CSV** | `time_index, link_index, util_mean, confidence` | Simple 4-column format; loads instantly |
+| **Telemetry CSV** | `link_id, time_index, utilization, …, confidence` | Full pipeline output (`telemetry_final.csv`); enables missing/stale markers |
+| **Demands CSV** | `time_index, source, target, demand_value` | Raw traffic matrix; app runs the full pipeline client-side (routing → utilization → uncertainty injection) |
+| **Demands + Topology** | Above + `nodes.csv` + `links.csv` | Custom topology; otherwise uses Abilene backbone |
+
+Drop multiple CSV files at once — the app identifies each by its headers.
+
+---
+
 ## Key Features
 
 - **Real traffic data** — SNDlib Abilene demand matrices (up to ~48K 5-minute snapshots)
 - **Shortest-path routing** — demands routed via NetworkX hop-count shortest paths
 - **Synthetic uncertainty injection** — variance, missingness (8%), staleness (5%), estimator disagreement
 - **Composite confidence score** — weighted combination of 4 uncertainty sources, range [0.05, 1.0]
-- **Dual visualization** — side-by-side congestion-only vs. confidence-aware topology maps
+- **Interactive web explorer** — animated SVG topology, time scrubber, confidence filter, sparklines
+- **Dual topology view** — side-by-side congestion-only vs. confidence-aware
 - **Time-series analysis** — utilization plots with confidence bands, missing/stale data markers
-- **ParaView VTK export** — animated time-series for 3D exploration
 - **Evaluation framework** — 4 scenario types with structured user-study questionnaires
-- **ParaView automation macro** — one-click multi-layer 3D scene setup with anomaly highlights, directional arrows, and demand arcs
-- **Interactive React explorer** — browser-based animated topology with confidence filtering, link detail panels, and ranking comparisons
-- **Pre-built ParaView state file** — ready-to-present `.pvsm` session with all layers configured
+- **Vercel deployment** — static build, deployable in one command
 
 ---
 
@@ -52,77 +81,101 @@ netvis-project/
 ├── README.md                     # This file
 ├── requirements.txt              # Python dependencies
 ├── data_readme.txt               # SNDlib Abilene data documentation
+├── explorer/                     # Web application (React + Vite)
+│   ├── index.html
+│   ├── vite.config.js
+│   ├── vercel.json               # Vercel deployment config
+│   ├── package.json
+│   ├── src/
+│   │   ├── App.jsx               # Main app shell (tabs, data state)
+│   │   ├── main.jsx
+│   │   ├── index.css
+│   │   ├── lib/
+│   │   │   ├── constants.js      # NODES, LINKS, layout helpers
+│   │   │   ├── colorscales.js    # YlOrRd / Blues colormaps
+│   │   │   ├── defaultData.js    # Embedded Abilene base64 data
+│   │   │   └── pipeline.js       # JS port of pipeline steps 3-4 + CSV parsers
+│   │   └── components/
+│   │       ├── ExplorerView.jsx       # Animated topology explorer
+│   │       ├── TopologyCompareView.jsx # Figure A vs B comparison
+│   │       ├── TimeSeriesView.jsx     # Per-link time series charts
+│   │       ├── ScenariosView.jsx      # 4 evaluation scenario detector
+│   │       ├── DataUploadPanel.jsx    # Multi-format CSV upload modal
+│   │       ├── TopologyMap.jsx        # Shared SVG topology component
+│   │       └── Sparkline.jsx          # Mini time-series component
+│   └── App.jsx                   # Original single-file explorer (reference)
 ├── scripts/
 │   ├── 01_download_sndlib.py     # Download + extract Abilene data from SNDlib
-│   ├── 02_parse_sndlib.py        # Parse XML → nodes.csv, links.csv, demands.csv
+│   ├── 02_parse_sndlib.py        # Parse XML -> nodes.csv, links.csv, demands.csv
 │   ├── 03_compute_utilization.py # Route demands, compute utilization & proxies
 │   ├── 04_inject_uncertainty.py  # Add noise, missingness, staleness, disagreement
-│   ├── 05_export_vtk.py         # Convert to ParaView VTK time series (.vtp)
+│   ├── 05_export_vtk.py          # Convert to ParaView VTK time series (.vtp)
 │   ├── 06_plot_topology.py       # Static topology figures (Figure A & B)
 │   ├── 07_plot_timeseries.py     # Time-series with confidence bands
-│   ├── 08_evaluation_scenarios.py# Generate eval scenario snapshots + tasks
-│   └── 09_paraview_macro.py      # ParaView Python macro for multi-layer 3D setup
+│   └── 08_evaluation_scenarios.py# Generate eval scenario snapshots + tasks
 ├── data/                         # Processed CSVs (generated by pipeline)
 │   ├── nodes.csv                 # 12 Abilene routers with coordinates
 │   ├── links.csv                 # 15 links with capacities (9920 Mbps each)
 │   ├── demands.csv               # ~266K demand entries (1 week default)
 │   ├── utilization.csv           # Per-link utilization + latency/queue proxies
 │   └── telemetry_final.csv       # Full telemetry with uncertainty + confidence
-├── explorer/                     # Interactive React/Vite web explorer
-│   ├── App.jsx                   # Main app component (topology, animation, panels)
-│   ├── main.jsx                  # React entry point
-│   ├── package.json              # Dependencies (React 19, Vite 8)
-│   └── README.md                 # Explorer-specific docs
-├── vtk_output/                   # VTK PolyData files for ParaView
-│   ├── abilene_timeseries.pvd    # Main topology time-series index
-│   ├── abilene_missing.pvd       # Missing-links layer index
-│   ├── abilene_arrows.pvd        # Directional flow arrows index
-│   ├── abilene_demands.pvd       # Demand arc layer index
-│   ├── FINAL_PROJECT_READYTOPRESENT.pvsm  # Pre-configured ParaView session
-│   └── topology_NNNNNN.vtp      # Per-timestep VTK PolyData files
 ├── output/                       # Figures and evaluation materials
-│   ├── figure_a_congestion_only.png
-│   ├── figure_b_confidence_aware.png
-│   ├── figure_comparison.png     # Side-by-side A vs B
-│   ├── scenario_*.png            # 4 evaluation scenario snapshots
-│   ├── timeseries_*.png          # Per-link and combined time-series
-│   └── evaluation_tasks.txt      # User study questionnaire
-├── directed-abilene-zhang-5min-over-6months-ALL/       # Raw SNDlib XML data
-└── directed-abilene-zhang-5min-over-6months-ALL-native/ # Raw SNDlib native data
-```
-
-> The `explorer/` app embeds its own data (1,008 frames × 30 directed links) derived from the pipeline output, so it works standalone without running the scripts.
+└── directed-abilene-zhang-5min-over-6months-ALL/  # Raw SNDlib XML data
 ```
 
 ---
 
 ## Prerequisites
 
+### Web App
+- Node.js 18+
+- npm
+
+### Python Pipeline
 - **Python 3.9+**
-- Dependencies listed in `requirements.txt`:
 
 | Package      | Version  | Purpose                                |
 |--------------|----------|----------------------------------------|
-| `numpy`      | ≥ 1.24   | Numerical operations                   |
-| `pandas`     | ≥ 2.0    | DataFrames and CSV I/O                 |
-| `networkx`   | ≥ 3.0    | Graph construction and shortest-path routing |
-| `matplotlib` | ≥ 3.7    | Topology and time-series plots         |
-| `vtk`        | ≥ 9.2    | VTK PolyData export for ParaView      |
-| `lxml`       | ≥ 4.9    | XML parsing of SNDlib data             |
-| `requests`   | ≥ 2.28   | Downloading SNDlib datasets            |
+| `numpy`      | >= 1.24  | Numerical operations                   |
+| `pandas`     | >= 2.0   | DataFrames and CSV I/O                 |
+| `networkx`   | >= 3.0   | Graph construction and shortest-path routing |
+| `matplotlib` | >= 3.7   | Topology and time-series plots         |
+| `vtk`        | >= 9.2   | VTK PolyData export for ParaView (optional) |
+| `lxml`       | >= 4.9   | XML parsing of SNDlib data             |
+| `requests`   | >= 2.28  | Downloading SNDlib datasets            |
 
-For the interactive explorer:
-
-| Package      | Version  | Purpose                                |
-|--------------|----------|----------------------------------------|
-| `node`       | ≥ 18     | JavaScript runtime                     |
-| `npm`        | ≥ 9      | Package manager                        |
-
-> **Note:** If VTK fails to install (common on some platforms), you can skip script `05_export_vtk.py`. All matplotlib-based outputs will still work.
+> **Note:** If VTK fails to install (common on some platforms), you can skip script `05_export_vtk.py`. All other outputs still work.
 
 ---
 
-## Quick Start
+## Quick Start — Web App
+
+```bash
+cd explorer
+npm install
+npm run dev          # Development server at http://localhost:5173
+npm run build        # Production build -> explorer/dist/
+npm run preview      # Preview production build locally
+```
+
+### Deploy to Vercel
+
+The `explorer/vercel.json` is pre-configured. Connect the repository in the Vercel dashboard and set the **Root Directory** to `explorer/`.
+
+```bash
+# Or via CLI from the explorer/ directory:
+npx vercel
+```
+
+Configuration summary:
+- **buildCommand:** `npm run build`
+- **outputDirectory:** `dist`
+- **framework:** `vite`
+- **SPA rewrites:** all routes -> `/index.html`
+
+---
+
+## Quick Start — Python Pipeline
 
 ```bash
 # 1. Install dependencies
@@ -133,21 +186,15 @@ python scripts/01_download_sndlib.py
 python scripts/02_parse_sndlib.py
 python scripts/03_compute_utilization.py
 python scripts/04_inject_uncertainty.py
-python scripts/05_export_vtk.py          # Optional — requires VTK
+python scripts/05_export_vtk.py          # Optional -- requires VTK
 python scripts/06_plot_topology.py
 python scripts/07_plot_timeseries.py
 python scripts/08_evaluation_scenarios.py
-
-# 3. (Optional) Run the ParaView macro inside ParaView's Python shell
-#    Tools → Python Shell → Run Script → scripts/09_paraview_macro.py
-
-# 4. Launch the interactive explorer
-cd explorer
-npm install
-npm run dev
 ```
 
-Scripts are numbered and **must run in order** (01–08) — each reads the output of the previous step. Script 09 runs inside ParaView, not from the command line. The explorer app is independent and can be launched at any time.
+Scripts must run **in order** — each reads the output of the previous step.
+
+The `telemetry_final.csv` produced by the pipeline can be uploaded directly to the web explorer for full confidence-aware visualization including missing and stale data markers.
 
 ---
 
@@ -173,11 +220,11 @@ Builds a NetworkX graph, routes demands via shortest hop-count paths, and comput
 
 | Metric | Formula | Description |
 |--------|---------|-------------|
-| **Utilization** | $u = \text{traffic} / \text{capacity}$ | Fraction of link capacity used |
-| **Latency proxy** | $\ell = 5.0 / (1 - \min(u, 0.99))$ | M/M/1 queueing model (ms) |
-| **Queue proxy** | $q = \max(0, u - 0.8) \times \text{capacity}$ | Backlog above 80% threshold |
+| **Utilization** | u = traffic / capacity | Fraction of link capacity used |
+| **Latency proxy** | l = 5.0 / (1 - min(u, 0.99)) | M/M/1 queueing model (ms) |
+| **Queue proxy** | q = max(0, u - 0.8) * capacity | Backlog above 80% threshold |
 
-- **Output:** `data/utilization.csv` (30,240 rows = 15 links × 2,016 timesteps)
+- **Output:** `data/utilization.csv` (30,240 rows = 15 links x 2,016 timesteps)
 
 ### Step 4 — Inject Uncertainty (`04_inject_uncertainty.py`)
 
@@ -185,98 +232,25 @@ Adds four types of synthetic uncertainty to simulate real-world telemetry issues
 
 | Source | Rate/Method | Weight in Confidence |
 |--------|-------------|---------------------|
-| **Temporal variance** | Rolling σ over 12-step window (1 hr) | 0.30 |
+| **Temporal variance** | Rolling sigma over 12-step window (1 hr) | 0.30 |
 | **Missingness** | 8% random drops, 40% burst probability | 0.25 |
 | **Staleness** | 5% repeated previous values | 0.20 |
-| **Estimator disagreement** | Gaussian noise σ=0.05 | 0.25 |
+| **Estimator disagreement** | Gaussian noise sigma=0.05 | 0.25 |
 
-**Composite confidence:**
+Composite confidence: `confidence = 1 - normalize(0.3*v + 0.25*m + 0.2*s + 0.25*d)`, clamped to [0.05, 1.0]
 
-$$\text{confidence} = 1 - \text{normalize}\big(0.3v + 0.25m + 0.2s + 0.25d\big), \quad \text{clamped to } [0.05,\; 1.0]$$
-
-- **Output:** `data/telemetry_final.csv` — adds `confidence`, `is_missing`, `staleness_count`, `variance`, `disagreement`, `util_original`
+- **Output:** `data/telemetry_final.csv`
 - **Seed:** 42 (reproducible)
 
 ### Step 5 — Export VTK (`05_export_vtk.py`) *(optional)*
 
-Produces one `.vtp` file per timestep for ParaView visualization. Each file contains node positions as points, links as line cells, and cell data arrays for utilization, confidence, latency, queue, and missingness.
+Produces one `.vtp` file per timestep for ParaView visualization.
 
-**10 independently toggleable feature flags** (all enabled by default):
+- **Output:** `vtk_output/topology_NNNNNN.vtp` (up to 500 files)
 
-| Feature | Description |
-|---------|-------------|
-| `node_labels` | Router name string array as point data |
-| `node_aggregates` | Per-node `total_throughput`, `avg_confidence`, `missing_link_count` |
-| `confidence_opacity` | Pre-computed RGBA colors (YlOrRd + confidence-mapped alpha) |
-| `uncertainty_bands` | `util_upper` / `util_lower` bounds (±2σ) |
-| `staleness_encoding` | `staleness_count` + `freshness = 1/(1+stale)` |
-| `anomaly_flags` | Z-score anomaly detection (window=12, threshold=2.0) |
-| `congestion_threshold` | Binary `is_congested` flag (utilization > 0.8) |
-| `missingness_separate` | Separate `.vtp` layer + `abilene_missing.pvd` for missing-only links |
-| `directional_arrows` | Arrow glyphs at link midpoints with direction vectors + `abilene_arrows.pvd` |
-| `demand_arcs` | Quadratic Bézier curved arcs for top-N demand flows + `abilene_demands.pvd` |
+### Steps 6-8 — Visualization & Evaluation
 
-- **Output:** 4 `.pvd` index files + per-timestep `.vtp` files (up to 500 per layer)
-- **Config:** `MAX_EXPORT_STEPS = 500`, `DEMAND_TOP_N = 20`, `ANOMALY_WINDOW = 12`, `ANOMALY_ZSCORE = 2.0`
-- NaN values replaced with 0.0 for VTK compatibility
-
-### Step 6 — Topology Figures (`06_plot_topology.py`)
-
-Generates the two core proposal figures:
-
-- **Figure A** (Congestion Only) — links colored by utilization (YlOrRd colormap), uniform opacity
-- **Figure B** (Confidence-Aware) — same color encoding, but opacity scales with confidence; missing links drawn as dashed gray lines
-
-Visual encoding:
-- Link width: proportional to utilization (1–10 px)
-- Link color: `YlOrRd` (yellow → orange → red)
-- Node labels: router names with "ng" suffix stripped
-
-Automatically selects the **most congested timestep** for display.
-
-### Step 7 — Time-Series Plots (`07_plot_timeseries.py`)
-
-For the top 3 most-congested links, generates plots showing:
-- Utilization line with **confidence band** (band width = $0.15 \times (1 - \text{confidence})$)
-- Red ✕ markers for missing data points
-- Orange dots for stale measurements
-- Lower panel with confidence score and low-confidence highlighting
-- Reference lines at utilization = 0.8 and 1.0
-
-### Step 8 — Evaluation Scenarios (`08_evaluation_scenarios.py`)
-
-Uses a sliding-window search (window=100 timesteps, 50% overlap) to find the best examples of 4 scenario types:
-
-| # | Scenario | Characteristics |
-|---|----------|----------------|
-| 1 | **Clean Congestion Spike** | High utilization (>0.5), high confidence (>0.7), low missingness |
-| 2 | **Noisy Hotspot** | High utilization (>0.3), low confidence (<0.6) |
-| 3 | **Missing Data Gap** | Highest missingness rate in any window |
-| 4 | **Stable Healthy Link** | Low utilization, high confidence (>0.7) |
-
-Outputs annotated snapshot figures and a structured `evaluation_tasks.txt` with user-study questions comparing Condition A (congestion-only) vs. Condition B (confidence-aware).
-
-### Step 9 — ParaView Macro (`09_paraview_macro.py`) *(run inside ParaView)*
-
-Automates the full multi-layer 3D visualization setup inside ParaView's Python shell. Creates:
-
-| Layer | Description |
-|-------|-------------|
-| **Main topology** | Tube filter colored by utilization (YlOrRd), radius varies by scalar |
-| **Anomaly highlights** | Red semi-transparent tubes via Threshold on `is_anomaly` |
-| **Congestion highlights** | Red overlay via Threshold on `is_congested` |
-| **Node labels/glyphs** | Point Gaussian representation with router names |
-| **Missing links** | Gray wireframe overlay from `abilene_missing.pvd` |
-| **Directional arrows** | Cone glyphs oriented by `direction`, scaled by utilization |
-| **Demand flow arcs** | Blue tube filter from `abilene_demands.pvd`, scaled by `demand_value` |
-| **Time annotation** | Timestamp display filter |
-
-- **Camera:** orthographic projection centered on U.S. geographic extent
-- **Background:** dark (`[0.1, 0.1, 0.15]`)
-- Each layer is gated on `.pvd` file existence — gracefully skips missing layers
-- **Usage:** ParaView → Tools → Python Shell → Run Script → `scripts/09_paraview_macro.py`
-
-> A pre-configured ParaView session is also available at `vtk_output/FINAL_PROJECT_READYTOPRESENT.pvsm` — open it via File → Load State to get all layers set up instantly.
+Generates static matplotlib figures and evaluation scenario snapshots. These are replicated interactively in the web explorer's four tabs.
 
 ---
 
@@ -284,127 +258,132 @@ Automates the full multi-layer 3D visualization setup inside ParaView's Python s
 
 ### Source
 
-The traffic matrices originate from real accounting data on the **U.S. Abilene/Internet2 backbone**. Original measurements were taken at 5-minute intervals from March 1 to September 10, 2004. Data was converted from `(100 bytes / 5 min)` to **Mbit/s** by the SNDlib team.
-
-See `data_readme.txt` for full provenance, known gaps, and caveats.
+Traffic matrices from the **U.S. Abilene/Internet2 backbone**. Original measurements taken at 5-minute intervals, March 1 through September 10, 2004. Data converted from `(100 bytes / 5 min)` to Mbit/s by the SNDlib team. See `data_readme.txt` for full provenance.
 
 ### Network Topology
 
 - **12 nodes** — major U.S. cities (Atlanta, Chicago, Denver, Houston, Indianapolis, Kansas City, Los Angeles, New York, Seattle, Sunnyvale, Washington D.C.)
-- **15 bidirectional links** — each with 9,920 Mbit/s capacity
-- Geographic coordinates used for spatial layout in visualizations
+- **15 bidirectional links** — each with 9,920 Mbit/s capacity (30 directed links total)
+- Geographic coordinates used for spatial layout
 
 ### Known Data Gaps
 
-Several date ranges have no measurement data:
-- March 15 – April 1, 2004
-- April 16 – 21, 2004
-- April 29 – 30, 2004
-- August 20, 2004
+Several date ranges have no measurement data: March 15-April 1, April 16-21, April 29-30, and August 20, 2004.
 
 ---
 
-## Visualization Outputs
+## Visualization Views
 
-All output figures are saved to the `output/` directory:
+### Explorer Tab
 
-| File | Description |
-|------|-------------|
-| `figure_a_congestion_only.png` | Topology colored by utilization only |
-| `figure_b_confidence_aware.png` | Topology with confidence-modulated opacity |
-| `figure_comparison.png` | Side-by-side A vs B (22×8 inches) |
-| `timeseries_<link>.png` | Per-link utilization + confidence bands |
-| `timeseries_combined.png` | All top links in one figure |
-| `scenario_1_clean_spike.png` | Clean congestion spike example |
-| `scenario_2_noisy_hotspot.png` | Noisy hotspot example |
-| `scenario_3_missing_gap.png` | Missing data gap example |
-| `scenario_4_stable_link.png` | Stable healthy link example |
+The animated topology explorer:
+- **Time slider** — scrub through all frames; play/pause at ~6 fps
+- **Confidence filter slider** — threshold below which links are de-emphasised and excluded from the filtered ranking
+- **Color by** — toggle between utilization (YlOrRd) and confidence (Blues)
+- **Link click** — detail panel with current metrics, sparklines, and statistics
+- **Ranking comparison** — naive top-5 (by utilization) vs. confidence-filtered top-5
+
+### Topology Compare Tab
+
+Side-by-side rendering at a selected timestep:
+- **Figure A** — Congestion only: links colored by utilization, uniform opacity
+- **Figure B** — Confidence-aware: opacity proportional to confidence; dashed gray = missing data
+
+### Time Series Tab
+
+Per-link time series plots (select up to 5 links):
+- Utilization line with **confidence band** (width = 1 - confidence)
+- Red **x** markers at missing-data timesteps
+- Orange dot markers at stale/repeated measurements
+- Reference lines at utilization = 0.8 and 1.0
+
+### Scenarios Tab
+
+Auto-detects representative examples of 4 scenario types via sliding-window search:
+
+| # | Scenario | Detection Criterion |
+|---|----------|-------------------|
+| 1 | **Clean Congestion Spike** | High utilization, high confidence, low missingness |
+| 2 | **Noisy Hotspot** | High utilization, low confidence |
+| 3 | **Missing Data Gap** | Highest missingness rate |
+| 4 | **Stable Healthy Link** | Low utilization, high confidence |
 
 ---
 
-## Interactive Explorer
+## Uploading Custom Data
 
-The `explorer/` directory contains a standalone **React + Vite** web application for interactive exploration of the Abilene network telemetry.
+### Format 1 — Explorer CSV
 
-### Features
-
-- **Animated topology map** — SVG node-link diagram with geographic layout, play/pause/reset controls at ~6 fps, and a time scrubber
-- **Confidence filter** — slider to de-emphasize low-confidence links on the map and exclude them from rankings
-- **Color modes** — toggle between utilization (YlOrRd) and confidence (Blues) coloring
-- **Link detail panel** — click any link to see current utilization/confidence, 7-day mean/max/min statistics, and sparkline charts with reference lines
-- **Top-5 ranking comparison** — side-by-side tables showing naive (by utilization) vs. confidence-filtered rankings; dropped links highlighted red, added links highlighted green
-- **CSV upload** — override the embedded dataset with an external CSV (columns: `time_index`, `link_index`, `util_mean`, `confidence`)
-- **Link classification** — edges tagged as `stable_core`, `semi_stable`, `episode_specific`, or `background`
-
-### Data
-
-The app embeds 1,008 frames × 30 directed links of telemetry (~60 KB base64-encoded), stride-2 sampled from the full pipeline output (10-minute intervals over 1 week). No server or Python pipeline required.
-
-### Running
-
-```bash
-cd explorer
-npm install
-npm run dev
+```csv
+time_index,link_index,util_mean,confidence
+0,1,0.045,0.923
+0,2,0.012,0.871
 ```
 
-Opens at `http://localhost:5173` by default.
+`link_index` is 1-based. Loads instantly with no pipeline step.
 
----
+### Format 2 — Telemetry CSV (`telemetry_final.csv`)
 
-## ParaView Usage
+```csv
+link_id,time_index,utilization,latency_proxy,queue_proxy,variance,is_missing,staleness_count,disagreement,util_original,confidence
+ATLAng__HSTNng,0,0.045,5.24,0.0,0.003,False,0,0.012,0.045,0.931
+```
 
-### Quick Start with State File
+Output of pipeline step 4. Enables missing-data and stale-data markers in the Time Series view.
 
-For the fastest setup, load the pre-configured session:
+### Format 3 — Demands CSV (with optional topology)
 
-1. Open **ParaView** (version 5.10+ recommended)
-2. File → **Load State** → select `vtk_output/FINAL_PROJECT_READYTOPRESENT.pvsm`
-3. When prompted for data directory, point to `vtk_output/`
-4. All layers (topology, anomalies, arrows, demands, missing links) will be loaded and styled automatically
+Upload `demands.csv` (required) plus optionally `nodes.csv` and `links.csv`. The app runs the full pipeline client-side: BFS routing, utilization computation, and synthetic uncertainty injection.
 
-### Manual Setup
+```csv
+# demands.csv
+time_index,source,target,demand_value
 
-1. File → Open → select `vtk_output/abilene_timeseries.pvd`
-2. Optionally load additional layers: `abilene_missing.pvd`, `abilene_arrows.pvd`, `abilene_demands.pvd`
-3. Or run `scripts/09_paraview_macro.py` in ParaView's Python Shell to set up all layers programmatically
+# nodes.csv
+node_id,lat,lng    (or node_id,x,y)
 
-> The `.pvd` files are lightweight XML indexes that reference the per-timestep `.vtp` files. Keep the `.vtp` files in the same directory.
+# links.csv
+link_id,source,target,capacity
+```
+
+Without nodes/links files, the Abilene backbone topology is assumed.
 
 ---
 
 ## Evaluation Scenarios
 
-The evaluation framework compares two visualization conditions:
+The evaluation framework compares:
 - **Condition A:** Congestion-only (standard heatmap)
 - **Condition B:** Confidence-aware (opacity + markers encode data quality)
 
-**Hypothesis:** Condition B reduces misinterpretation of congestion, especially when telemetry is noisy or incomplete.
+**Hypothesis:** Condition B reduces misinterpretation of congestion when telemetry is noisy or incomplete.
 
-See `output/evaluation_tasks.txt` for the full questionnaire with per-scenario tasks and scoring rubric.
+See `output/evaluation_tasks.txt` for the full questionnaire.
 
 ---
 
 ## Configuration & Tuning
 
-Key constants that can be adjusted across scripts:
+### Python Pipeline
 
 | Script | Constant | Default | Description |
 |--------|----------|---------|-------------|
-| `02` | `WEEK_LIMIT` | 2016 | Number of 5-min timesteps to process (2016 = 1 week) |
+| `02` | `WEEK_LIMIT` | 2016 | Number of 5-min timesteps to process |
 | `03` | `BASE_LATENCY_MS` | 5.0 | M/M/1 base propagation delay |
-| `03` | `QUEUE_THRESHOLD` | 0.8 | Utilization above which queue backlog accumulates |
+| `03` | `QUEUE_THRESHOLD` | 0.8 | Utilization above which queue accumulates |
 | `04` | `SEED` | 42 | Random seed for reproducibility |
 | `04` | Missingness rate | 8% | Fraction of samples randomly dropped |
 | `04` | Staleness rate | 5% | Fraction of samples repeated from previous |
-| `05` | `MAX_EXPORT_STEPS` | 500 | Max VTK files to export (~42 hours) |
-| `05` | `DEMAND_TOP_N` | 20 | Top demand flows for arc visualization |
-| `05` | `ANOMALY_WINDOW` | 12 | Rolling window for z-score anomaly detection |
-| `05` | `ANOMALY_ZSCORE` | 2.0 | Z-score threshold for anomaly flags |
-| `05` | `CONGESTION_THRESHOLD` | 0.8 | Utilization threshold for congestion flag |
 | `07` | `TOP_N_LINKS` | 3 | Number of top links for time-series plots |
-| `07` | `TIME_WINDOW` | 500 | Timesteps shown in time-series plots |
-| `08` | `WINDOW` | 100 | Sliding window size for scenario detection |
+
+### Web App Encoding
+
+| Constant | Value | Meaning |
+|----------|-------|---------|
+| `N_FRAMES` | 1008 | One week at stride-2 (10-min intervals) |
+| `N_LINKS` | 30 | Directed Abilene links |
+| `U_SCALE` | 0.32 | Max utilization in embedded base64 data |
+| `C_LO/C_HI` | 0.60/1.00 | Confidence range in embedded data |
 
 ---
 
@@ -412,14 +391,13 @@ Key constants that can be adjusted across scripts:
 
 | Issue | Solution |
 |-------|----------|
-| SNDlib download fails | Their server can be slow. Try wget/curl manually, or download from [sndlib.put.poznan.pl](https://sndlib.put.poznan.pl/home.action) |
-| VTK install fails | Skip script 05; matplotlib outputs still work |
-| Memory issues with full dataset | Reduce `WEEK_LIMIT` in scripts 02–04 |
-| NetworkX routing is slow | The Abilene graph is tiny (12 nodes). Ensure you're using `WEEK_LIMIT` and not the full 48K matrices |
+| SNDlib download fails | Try wget/curl manually or download from [sndlib.put.poznan.pl](https://sndlib.put.poznan.pl/home.action) |
+| VTK install fails | Skip script 05; all other outputs still work |
+| Memory issues with full dataset | Reduce `WEEK_LIMIT` in scripts 02-04 |
+| Web upload: "unrecognised format" | Check CSV headers match one of the three supported formats (case-sensitive) |
+| Web pipeline is slow | Large demands.csv (>100K rows) can take 30-60 s. Run the Python pipeline offline and upload `telemetry_final.csv` instead |
 | Demands don't sum correctly | SNDlib uses directed demands; link utilization may appear asymmetric |
-| Script fails with FileNotFoundError | Scripts must run in order (01 → 08); each depends on the previous output |
-| ParaView macro finds no `.pvd` files | Run script 05 first; the macro skips missing layers gracefully |
-| Explorer won't start | Ensure Node.js ≥ 18 is installed; run `npm install` in the `explorer/` directory |
+| Script fails with FileNotFoundError | Scripts must run in order (01->08); each depends on the previous output |
 
 ---
 
